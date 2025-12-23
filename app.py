@@ -33,17 +33,21 @@ def login():
             session['id'] = obj  
             session['user'] = email 
             print("\n(POST) From route '/login': User authenticated successfully!\n")
+            flash("Authentication was a success! Welcome :)", "success")
             return redirect(url_for('home'))
         else: 
             # Else if user does not exist, redirect to register page
             if obj is None: 
                 print(f"\n(POST FAILED) From route '/login' - {message}\n")
+                flash("Email or password wrong. Please, try again!", "danger")
                 return redirect(url_for('login'))
             elif obj == "UNF":
                 print(f"\n(POST FAILED) From route '/login' - {message}\n")
-                return redirect(url_for('register'))
+                flash("This user doesn't exists on Wallet Watch. Please register!", "danger")
+                return redirect(url_for('login'))
             # Else some error occurred during authentication
             print(f"\n(POST FAILED) From route '/login' - {message}\n")
+            flash("Oops! Something got wrong. Please, call suport!", "danger")
             return redirect(url_for('login'))
     return render_template('login.html')
 
@@ -62,18 +66,22 @@ def register():
         # If the user was registered successfully, redirect to login page
         if success == True:
             print("\nFrom route '/auth_register': User registered successfully!\n")
+            flash("Authentication was a success! Welcome :)!", "danger")
             return redirect(url_for('login'))
         else:
             # Else if user already exists, redirect to login page
             if obj is None:
                 print(f"\n(FAILED) From route '/auth_register' - {message}\n")
+                flash("This user already exists on Wallet Watch. Please, login!", "warning")
                 return redirect(url_for('register'))
             # Else some error occurred during registration
             else:
                 print(f"\n(FAILED) From route '/auth_register' - {message}\n")
+                flash("Oops! Something got wrong. Please, call suport!", "danger")
                 return redirect(url_for('register'))
     return render_template('register.html')
 
+# Logout route that clear the session and redirect to login page
 @app.route('/logout', methods=['GET'])
 def logout():
     session.clear()
