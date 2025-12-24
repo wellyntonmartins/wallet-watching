@@ -6,7 +6,7 @@ import getters, setters
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=5)
 
 # First route that renders when the system on
 @app.route('/', methods=['GET'])
@@ -14,7 +14,7 @@ def index():
     return redirect(url_for('home'))
 
 # Home route thats load the main page
-@app.route('/home', methods=['GET'])
+@app.route('/home', methods=['GET', 'POST'])
 def home():
     if 'user' not in session.keys():
         return redirect(url_for('login'))
@@ -80,6 +80,10 @@ def register():
                 flash("Oops! Something got wrong. Please, call suport!", "danger")
                 return redirect(url_for('register'))
     return render_template('register.html')
+
+@app.route('/transactions', methods=['GET', 'POST'])
+def transactions():
+    return render_template('transactions.html')
 
 # Logout route that clear the session and redirect to login page
 @app.route('/logout', methods=['GET'])

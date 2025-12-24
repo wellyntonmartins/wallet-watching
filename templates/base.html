@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    {% block head %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,14 +14,23 @@
     <script src="/static/js/flash.js"></script>
     <title>{% block title %}{% endblock %} - Wallet Watch</title>
     <link
+      rel="icon"
+      type="image/x-icon"
+      href="/static/images/wallet-watch-favicon-logo-removebg-preview.png"
+    />
+    <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    {% endblock head %}
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    {% block head %} {% endblock head %}
   </head>
-  <body>
+  <body style="font-family: 'Inter Tight', sans-serif">
     <!-- Top bar -->
     <div class="top-bar">
       <div class="row">
@@ -41,7 +49,7 @@
     <div class="container-fluid p-0">
       <nav class="lateral-bar col-md-3 col-lg-2 d-md-block sidebar collapse">
         <ul>
-          <li><a href="/">Home</a></li>
+          <li><a href="/home">Home</a></li>
           <li><a href="/transactions">Transactions</a></li>
         </ul>
       </nav>
