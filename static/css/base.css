@@ -68,7 +68,7 @@ ul li {
 
 li:hover {
   cursor: pointer;
-  background: var(--button-hover-color-light-mode);
+  background: var(--sixth-color-light-mode);
 }
 
 li a {

@@ -49,15 +49,11 @@ form button {
 }
 
 form button:hover {
-  background-color: var(--button-hover-color-light-mode);
+  background-color: var(--sixth-color-light-mode);
 }
 
 form a {
   color: var(--white-color);
-}
-
-form h2 {
-  font-style: italic;
 }
 
 form .form-group {

@@ -3,8 +3,11 @@
   --second-color-light-mode: #f9f4e3;
   --third-color-light-mode: #d4ddb1;
   --fourth-color-light-mode: #b1ba8e;
+  --fourth-strong-color-light-mode: #a0b44f;
   --fifth-color-light-mode: #7a6448;
-  --button-hover-color-light-mode: #ff67679c;
+  --sixth-color-light-mode: #ff67679c;
+  --sixth-strong-color-light-mode: #ff6767fb;
   --gray-color-light-mode: #b5b5b562;
+  --gray-weak-color-light-mode: #7e7e7e;
   --white-color: #ffffff;
 }
