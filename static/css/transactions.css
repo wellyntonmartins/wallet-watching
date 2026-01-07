@@ -167,6 +167,26 @@ form .modal-footer .btn-save-trans {
   margin: 10px 0px;
 }
 
+.inoutflow-row a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  margin: 10px 10px;
+  width: 30%;
+  border-radius: 12px;
+  height: 80%;
+  color: var(--black-color);
+  background: var(--fourth-color-light-mode);
+}
+
+.inoutflow-row a:hover {
+  cursor: pointer;
+  background: var(--sixth-color-light-mode);
+}
+
 .amount-redeemed {
   outline: none;
   border: none;

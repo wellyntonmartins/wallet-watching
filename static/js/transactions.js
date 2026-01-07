@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
   $("input.amount-redeemed").prop("readonly", true);
   $("input.overview-input").prop("readonly", true);
 
+  fillInoutflowRow();
+});
+
+function fillInoutflowRow() {
   const analyticsSection = document.getElementById("analytics-section");
   const gainAnalyCol = document.getElementById("gain-analy");
   const expAnalyCol = document.getElementById("exp-analy");
@@ -29,9 +33,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
   const ctxGains = document.getElementById("graphic-gains");
   const gains_string = document.getElementById("gains_list");
-
-  console.log(`Expenses String input: ${expenses_string}`);
-  console.log(`Gains String input: ${gains_string}`);
 
   if (expenses_string == null) {
     if (gains_string == null) {
@@ -124,7 +125,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     let gains_string_val = gains_string.value;
     const gains_replace = gains_string_val.replace(/'/g, '"');
-    console.log(`Gains Replace: ${gains_replace}`);
 
     const gains_list = JSON.parse(gains_replace);
     const sorted_gains = Object.entries(gains_list)
@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     new Chart(ctxGains, configGains);
   }
-});
+}
 
 function contentToRow(selectValue) {
   console.log("contentToRowCalled");
@@ -242,6 +242,18 @@ function contentToRow(selectValue) {
             id="amount"
             placeholder="Ex: 200,00"
             required
+        />
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12">
+        <label for="payment-receipt">Payment receipt (Optional):</label>
+        <input
+            type="file"
+            class="form-control"
+            name="payment-receipt"
+            id="payment-receipt"
         />
         </div>
     </div>
@@ -305,11 +317,11 @@ function contentToRow(selectValue) {
 
     <div class="row mt-3">
         <div class="col-md-12">
-            <label for="fixed-cost-select">Essential?:</label>
+            <label for="fixed-cost-select">Fixed cost?:</label>
             <select
                 class="form-select"
                 name="fixed-cost-select"
-                id="essential-select"
+                id="fixed-cost-select"
                 required
             >
                 <option value="" selected disabled>
@@ -344,6 +356,18 @@ function contentToRow(selectValue) {
             id="amount"
             placeholder="Ex: 91,00"
             required
+        />
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-12">
+        <label for="payment-receipt">Payment receipt (Optional):</label>
+        <input
+            type="file"
+            class="form-control"
+            name="payment-receipt"
+            id="payment-receipt"
         />
         </div>
     </div>

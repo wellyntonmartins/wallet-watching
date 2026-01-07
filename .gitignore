@@ -1,4 +1,6 @@
 env/
 /connection.py
+payment_receipts/
+temporary_pdfs/
 __pycache__/
 *.pyc

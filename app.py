@@ -1,12 +1,23 @@
 # The file that runs all the application
 from datetime import timedelta, datetime
-from flask import Flask, flash, request, render_template, redirect, session, url_for, jsonify
+from flask import Flask, flash, request, render_template, redirect, session, url_for, jsonify, send_from_directory
 from connection import get_db_connection
-import getters, setters
+import os
+from werkzeug.utils import secure_filename
+import getters, setters 
+
+UPLOAD_FOLDER = 'static/images/payment_receipts'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=5)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # First route that renders when the system on
 @app.route('/', methods=['GET'])
@@ -93,6 +104,16 @@ def transactions():
     user_id = session['id']
     
     if request.method == 'POST':
+        cnx = get_db_connection()
+        success_status, message_status, status = getters.get_table_status(cnx, "transactions")
+        auto_increment = 0
+
+        if success_status == True:
+            auto_increment = int(status["Auto_increment"])
+        else:
+            print(f"\n(FAILED WHILE GETTING TABLE STATUS) From route '/transactions' - {message_status}\n")
+            flash("Oops! Something got wrong. Please, call suport!", "danger")
+            return redirect(url_for('transactions'))
 
         transaction_type = request.form['type-select']
         category = request.form['category-select']
@@ -107,18 +128,51 @@ def transactions():
         transaction_date = datetime.strptime(transformed_date, "%Y/%m/%d").date()
         
         description = request.form['description']
+        file = request.files['payment-receipt']
+        has_receipt = ""
 
-        cnx = get_db_connection()
-        success, message= setters.insert_transaction(cnx, user_id, transaction_type, category, fixed_cost, amount, transaction_date, description)
+        if file.filename == '':
+            cnx = get_db_connection()
+            has_receipt = "no"
+            success, message = setters.insert_transaction(cnx, user_id, transaction_type, category, fixed_cost, amount, transaction_date, description, has_receipt)
 
-        if success == True:
-            print("\nFrom route '/transactions': Transaction successfully added !\n")
-            flash(f"Transaction type '{transaction_type}' added!", "success")
-            return redirect(url_for('transactions'))
+            if success == True:
+                print("\nFrom route '/transactions': Transaction successfully added !\n")
+                flash(f"Transaction type '{transaction_type}' added!", "success")
+                return redirect(url_for('transactions'))
+            else:
+                print(f"\n(FAILED POST) From route '/transactions' - {message}\n")
+                flash("Oops! Something got wrong. Please, call suport!", "danger")
+                return redirect(url_for('transactions'))
         else:
-            print(f"\n(FAILED) From route '/transactions' - {message}\n")
-            flash("Oops! Something got wrong. Please, call suport!", "danger")
-            return redirect(url_for('transactions'))
+            if allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file_type = filename.rsplit(".", 1)[1].lower()
+                    has_receipt = "yes"
+
+
+                    try:
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], f"{auto_increment}.{file_type}"))
+                        cnx = get_db_connection()
+                        success, message = setters.insert_transaction(cnx, user_id, transaction_type, category, fixed_cost, amount, transaction_date, description, has_receipt)
+
+                        if success == True:
+                            print("\nFrom route '/transactions': Transaction successfully added !\n")
+                            flash(f"Transaction type '{transaction_type}' added! (with payment receipt)", "success")
+                            return redirect(url_for('transactions'))
+                        else:
+                            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                            print(f"\n(FAILED POST) From route '/transactions' - {message}\n")
+                            flash("Oops! Something got wrong. Please, call suport!", "danger")
+                            return redirect(url_for('transactions'))
+                    except Exception as e:
+                        print(f"\n(FAILED POST) From route '/transactions'- Failed to save file: {e} \n")
+                        flash("Oops! Something got wrong. Please, call suport!", "danger")
+                        return redirect(url_for('transactions'))
+            else:
+                print(f"\n(FAILED POST) From route '/transactions'- Not allowed filename \n")
+                flash("Oops! Something got wrong. Please, call suport!", "danger")
+                return redirect(url_for('transactions'))
         
     cnx = get_db_connection()
     success, message, transactions = getters.get_transactions(cnx, user_id)
@@ -277,6 +331,38 @@ def wishlist():
                 return render_template("wishlist.html", wishlist=None)
     else:
         return redirect(url_for('login'))
+
+@app.route('/download_receipt/<int:receipt_id>', methods=['GET'])
+def download_receipt(receipt_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    
+    directory = app.config['UPLOAD_FOLDER']
+    abs_directory = os.path.abspath(directory) 
+    
+    for filename in os.listdir(abs_directory):
+        base_name, ext = os.path.splitext(filename)
+        if base_name == str(receipt_id) and ext[1:].lower() in ALLOWED_EXTENSIONS:
+            try:
+                download_name = f"RECEIPT_{receipt_id}{ext}"
+                print(f"\n(GET) From route '/download_receipt': Sending file {filename} as {download_name}")
+                return send_from_directory(
+                    directory,
+                    filename,
+                    as_attachment=True,
+                    download_name=download_name,
+                    mimetype='application/octet-stream'  
+                )
+            except Exception as e:
+                print(f"\n(FAILED GET) From route '/download_receipt': {e}")
+                flash("Oops! Something got wrong. Please, call support!", "danger")
+                return redirect(url_for('transactions'))
+    
+    print(f"\n(FAILED GET) From route '/download_receipt': File not found for ID {receipt_id}")
+    flash("Receipt not found. Please, call support!", "danger")
+    return redirect(url_for('transactions'))
+
+
 
 # Logout route that clear the session and redirect to login page
 @app.route('/logout', methods=['GET'])

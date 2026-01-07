@@ -82,6 +82,13 @@
                 , {{ transac_date[2] }}/{{ transac_date[1] }}/{{ transac_date[0]
                 }}
               </p>
+              {% if transaction.has_receipt == "yes" %}
+              <p>,</p>
+              <a
+                href="{{ url_for('download_receipt', receipt_id=transaction.id) }}"
+                >Download Receipt</a
+              >
+              {% else %}{% endif %}
             </div>
             {% if transaction.type == "expense" %}
             <div class="col-md-3 expense">
@@ -177,7 +184,11 @@
             aria-label="Close"
           ></button>
         </div>
-        <form action="{{ url_for('transactions') }}" method="POST">
+        <form
+          action="{{ url_for('transactions') }}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
           <div class="modal-body">
             <div class="row type_row">
               <div class="col-md-12">

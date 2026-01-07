@@ -27,14 +27,14 @@ def auth_register(cnx, email, password):
         if cnx:
             cnx.close()
 
-def insert_transaction(cnx, user_id, transaction_type, category, fixed_cost, amount, date, description):
+def insert_transaction(cnx, user_id, transaction_type, category, fixed_cost, amount, date, description, has_receipt):
     cursor = None
 
     try:
         cursor = cnx.cursor(dictionary=True)
 
-        query = "INSERT INTO transactions (user_id, type, category, fixed_cost, amount, transaction_date, description) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        cursor.execute(query, (user_id, transaction_type, category, fixed_cost, amount, date, description,))
+        query = "INSERT INTO transactions (user_id, type, category, fixed_cost, amount, transaction_date, description, has_receipt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(query, (user_id, transaction_type, category, fixed_cost, amount, date, description, has_receipt, ))
         cnx.commit()
 
         return True, "Transaction successfully added"

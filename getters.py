@@ -67,3 +67,22 @@ def get_wishlist(cnx, user_id):
             cursor.close()
         if cnx:
             cnx.close()
+
+def get_table_status(cnx, table):
+    cursor = None
+
+    try:
+        cursor = cnx.cursor(dictionary=True)
+
+        query = "SHOW TABLE STATUS LIKE %s"
+        cursor.execute(query, (table,))
+        status = cursor.fetchone() 
+
+        return True, "Table status successfully redeemed", status
+    except Exception as e:
+        return False, f"Error during get table status: {e}", "Exception"
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
