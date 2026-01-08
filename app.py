@@ -6,8 +6,6 @@ import os
 from werkzeug.utils import secure_filename
 import getters, setters 
 import reports_generator
-from dotenv import load_dotenv
-load_dotenv()
 
 UPLOAD_FOLDER = 'static/images/payment_receipts'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg'}
