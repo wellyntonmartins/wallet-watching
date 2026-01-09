@@ -1,6 +1,5 @@
+// Function to update wish when it's checked or no
 function updateWish(input) {
-  console.log(`\nInput id: ${input.id}`);
-  console.log(`\nInput check: ${input.checked}`);
   fetch("/wishlist", {
     method: "UPDATE",
     headers: {
@@ -22,6 +21,7 @@ function updateWish(input) {
     });
 }
 
+// Function to delete wish
 function deleteWish(button) {
   const row = button.closest(".row");
   const input = row.querySelector('input[type="checkbox"]');

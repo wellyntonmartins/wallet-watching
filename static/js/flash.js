@@ -1,3 +1,4 @@
+// Function to stylize the many flash types
 function stylizeFlashMessages() {
   const flashUl = document.querySelector("ul.flashes");
   if (!flashUl) return;

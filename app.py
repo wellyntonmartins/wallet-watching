@@ -4,7 +4,7 @@ from flask import Flask, flash, request, render_template, redirect, session, url
 from connection import get_db_connection
 import os
 from werkzeug.utils import secure_filename
-import getters, setters 
+import getters, setters # Functions to set and get infos on database (MySQL)
 import reports_generator
 
 UPLOAD_FOLDER = 'static/images/payment_receipts'
@@ -16,6 +16,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=5)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
+# Def to verify if the receipt file type is on allowed extensios
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -25,13 +26,14 @@ def allowed_file(filename):
 def index():
     return redirect(url_for('home'))
 
-# Home route thats load the main page
+# Route for page "Home"
 @app.route('/home', methods=['GET', 'POST'])
 def home():
     if 'user' not in session.keys():
         return redirect(url_for('login'))
     return render_template('index.html')
 
+# Route for page "Login"
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -63,7 +65,7 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
-# Register route that load the register page
+# Route for page "Register"
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -97,6 +99,7 @@ def register():
                 return redirect(url_for('register'))
     return render_template('register.html')
 
+# Route for page "Transactions"
 @app.route('/transactions', methods=['GET', 'POST'])
 def transactions():
     if 'user' not in session.keys():
@@ -107,15 +110,16 @@ def transactions():
     if request.method == 'POST':
         cnx = get_db_connection()
         success_status, message_status, status = getters.get_table_status(cnx, "transactions")
-        auto_increment = 0
+        auto_increment = 0 
 
         if success_status == True:
-            auto_increment = int(status["Auto_increment"])
+            auto_increment = int(status["Auto_increment"]) # Get 'Auto_increment' for future receipt filename if exists
         else:
             print(f"\n(FAILED WHILE GETTING TABLE STATUS) From route '/transactions' - {message_status}\n")
             flash("Oops! Something got wrong. Please, call suport!", "danger")
             return redirect(url_for('transactions'))
 
+        # Getting requests from HTML
         transaction_type = request.form['type-select']
         category = request.form['category-select']
         fixed_cost = request.form['fixed-cost-select'] if transaction_type != 'gain' else 'N/A'
@@ -132,6 +136,7 @@ def transactions():
         file = request.files['payment-receipt']
         has_receipt = ""
 
+        # Create receipt file on application if it has sended
         if file.filename == '':
             cnx = get_db_connection()
             has_receipt = "no"
@@ -150,7 +155,6 @@ def transactions():
                     filename = secure_filename(file.filename)
                     file_type = filename.rsplit(".", 1)[1].lower()
                     has_receipt = "yes"
-
 
                     try:
                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], f"{auto_increment}.{file_type}"))
@@ -174,10 +178,11 @@ def transactions():
                 print(f"\n(FAILED POST) From route '/transactions'- Not allowed filename \n")
                 flash("Oops! Something got wrong. Please, call suport!", "danger")
                 return redirect(url_for('transactions'))
-        
+    # If method is 'GET'
     cnx = get_db_connection()
     success, message, transactions = getters.get_transactions(cnx, user_id)
 
+    # To store the values for overview
     total_expenses = 0
     total_gains = 0
     total_in_account = 0
@@ -203,11 +208,13 @@ def transactions():
         'other': 0,
     } 
 
+    # Count for each type of transactions (To future chart.js)
     count_expenses = 0
     count_gains = 0
 
     if success == True:
         for transaction in transactions:
+            # Seting the values... 
             if transaction["type"] == "expense":
                 total_expenses += transaction["amount"]
 
@@ -223,6 +230,7 @@ def transactions():
         
         total_in_account = total_gains - total_expenses
 
+        # Seting the count values...
         for category_count in expenses_list: 
             if expenses_list[f'{category_count}'] > 0:
                 count_expenses += 1
@@ -231,6 +239,7 @@ def transactions():
             if gains_list[f'{category_count}'] > 0:
                 count_gains += 1
 
+        # Sorting listis...
         if count_expenses == 0:
             sorted_expenses_list = None
         else:
@@ -249,6 +258,7 @@ def transactions():
         flash("Oops! Something got wrong. Please, call suport!", "danger")
         return redirect(url_for('transactions'))
 
+# Route for page "Reports"
 @app.route('/reports', methods=['GET', 'POST'])
 def reports():
     if 'user' in session:
@@ -256,6 +266,7 @@ def reports():
     else:
         return redirect(url_for('login'))
 
+# Route to generate the requested report
 @app.route('/generate_report', methods=['GET']) 
 def generate_report():
     if 'user' not in session:
@@ -264,6 +275,7 @@ def generate_report():
     user_id = session['id']
     email = session['user']
     
+    # Generating PDF...
     pdf_bytes = reports_generator.generate_monthly_report(user_id, email)
     
     if pdf_bytes:
@@ -272,6 +284,7 @@ def generate_report():
         flash("Error generating report", "danger")
         return redirect(url_for('reports'))
 
+# Route for page "Wish List"
 @app.route('/wishlist', methods=['GET', 'POST', 'UPDATE', 'DELETE'])
 def wishlist():
     if 'user' in session:
@@ -349,6 +362,7 @@ def wishlist():
     else:
         return redirect(url_for('login'))
 
+# Route to download the requested receipt
 @app.route('/download_receipt/<int:receipt_id>', methods=['GET'])
 def download_receipt(receipt_id):
     if 'user' not in session:

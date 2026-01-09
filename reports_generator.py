@@ -4,6 +4,7 @@ import random
 from connection import get_db_connection
 import getters
 
+# Setting header/footer PDF config
 class PDF(FPDF):
     def header(self):
         self.set_font('Arial', 'B', 12)
@@ -17,6 +18,7 @@ class PDF(FPDF):
         self.set_text_color(128)
         self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
 
+# Function to generate monthly report PDF
 def generate_monthly_report(user_id, email):
     cnx = get_db_connection()
     success, msg, transactions = getters.get_transactions(cnx, user_id)

@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function (event) {
+  // Masking the inputs
   $(".amount-redeemed")
     .maskMoney({
       prefix: "R$ ",
@@ -20,10 +21,11 @@ document.addEventListener("DOMContentLoaded", function (event) {
   $("input.amount-redeemed").prop("readonly", true);
   $("input.overview-input").prop("readonly", true);
 
-  fillInoutflowRow();
+  fillAnalytics();
 });
 
-function fillInoutflowRow() {
+// Function to fill the graphics
+function fillAnalytics() {
   const analyticsSection = document.getElementById("analytics-section");
   const gainAnalyCol = document.getElementById("gain-analy");
   const expAnalyCol = document.getElementById("exp-analy");
@@ -187,6 +189,7 @@ function fillInoutflowRow() {
   }
 }
 
+// Function to fill the modal content based on transaction type
 function contentToRow(selectValue) {
   console.log("contentToRowCalled");
   const emptyRow = document.getElementById("section_by_type");
@@ -401,6 +404,7 @@ function contentToRow(selectValue) {
     }
   }
 
+  // Masking amount input for the both
   $("#amount").maskMoney({
     decimal: ",",
     thousands: ".",
