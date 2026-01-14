@@ -3,12 +3,14 @@ from datetime import timedelta, datetime
 from flask import Flask, flash, request, render_template, redirect, session, url_for, jsonify, send_from_directory, Response
 from connection import get_db_connection
 import os
-import requests
 from werkzeug.utils import secure_filename
 import getters, setters # Functions to set and get infos on database (MySQL)
 import reports_generator
 import random
 import string
+import smtplib
+from email.message import EmailMessage
+from threading import Thread
 
 
 UPLOAD_FOLDER = 'static/images/payment_receipts'
@@ -418,26 +420,24 @@ def send_mail():
         try:             
             name = user['email'].split("@")[0]
 
-            # Generate the recovery code and send e-mail by Resend
+            # Generate the recovery code and send e-mail by SMTP
             code = generate_code()
-            status_email, message_email = send_code_to_mail(user['email'], name, code)
-            
-            if status_email == True:
-                # Insert the code to database
-                cnx = get_db_connection()
-                success_insert_cover, message_insert_cover = setters.insert_recover(cnx, user['id'], code)
+            Thread(
+                target=send_async_email,
+                args=(app, user['email'], name, code)
+            ).start()
 
-                if success_insert_cover == True: 
-                    print("\n(POST) From route '/send_mail': E-mail sent!\n")
-                    return render_template('login.html', isRecover=True, user_id=user['id'])
-                else:
-                    print(f"\n(POST FAILED) From route '/send_mail': {message_insert_cover}\n")
-                    flash("Oops! Something got wrong. Please, call suport!", "danger")
-                    return render_template('login.html', isRecover=False)
+            cnx = get_db_connection()
+            success_insert_cover, message_insert_cover = setters.insert_recover(cnx, user['id'], code)
+
+            if success_insert_cover == True: 
+                print("\n(POST) From route '/send_mail': E-mail sent!\n")
+                return render_template('login.html', isRecover=True, user_id=user['id'])
             else:
-                print(message_email)
+                print(f"\n(POST FAILED) From route '/send_mail': {message_insert_cover}\n")
                 flash("Oops! Something got wrong. Please, call suport!", "danger")
                 return render_template('login.html', isRecover=False)
+            
         except Exception as e:
             print(f"\n(POST FAILED) From route '/send_mail': {e}\n")
             flash("Oops! Something got wrong. Please, call suport!", "danger")
@@ -463,30 +463,30 @@ def send_code_to_mail(to_email, name, code):
             year=datetime.now().year
         )
 
-        print("RESEND_API_KEY =", os.getenv("RESEND_API_KEY"))
+        msg = EmailMessage()
+        msg["Subject"] = "Password recovery code"
+        msg["From"] = os.getenv("MAIL_DEFAULT_SENDER")
+        msg["To"] = to_email
+        msg.set_content("Use the code below to recover your password.")
+        msg.add_alternative(html_content, subtype="html")
 
-        response = requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {os.getenv('RESEND_API_KEY').strip()}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "from": "Wallet Watching <onboarding@resend.dev>",
-                "to": [to_email],
-                "subject": "Password recovery code of Wallet Watching",
-                "html": html_content
-            },
-            timeout=10
-        )
+        with smtplib.SMTP(os.getenv("MAIL_SERVER"), int(os.getenv("MAIL_PORT"))) as server:
+            server.starttls()
+            server.login(
+                os.getenv("MAIL_USERNAME"),
+                os.getenv("MAIL_PASSWORD")
+            )
+            server.send_message(msg)
 
-        if response.status_code in (200, 201):
-            return True, "Email was sent successfully"
-
-        return False, f"Errr during email sent: {response.text}"
+        return True, "E-mail enviado com sucesso"
 
     except Exception as e:
         return False, str(e)
+
+def send_async_email(app, to_email, name, code):
+    with app.app_context():
+        send_code_to_mail(to_email, name, code)
+
 
 # Route to verify user recovery code
 @app.route('/verify_code', methods=['POST'])
