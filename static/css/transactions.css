@@ -337,6 +337,7 @@ button.btn-outline-danger {
 
   .analytics-section {
     display: flex;
+    margin-bottom: 100px;
     gap: 10px;
   }
 
