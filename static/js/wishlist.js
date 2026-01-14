@@ -43,6 +43,6 @@ function deleteWish(button) {
       window.location.href = "/wishlist";
     })
     .catch((error) => {
-      console.error("Algo deu errado:", error);
+      console.error("Something got wrong:", error);
     });
 }

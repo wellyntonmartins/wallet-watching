@@ -109,7 +109,7 @@ def register():
     return render_template('register.html')
 
 # Route for page "Transactions"
-@app.route('/transactions', methods=['GET', 'POST'])
+@app.route('/transactions', methods=['GET', 'POST', 'DELETE'])
 def transactions():
     if 'user' not in session.keys():
         return redirect(url_for('login'))
@@ -187,6 +187,23 @@ def transactions():
                 print(f"\n(FAILED POST) From route '/transactions'- Not allowed filename \n")
                 flash("Oops! Something got wrong. Please, call suport!", "danger")
                 return redirect(url_for('transactions'))
+    # If method is 'DELETE'
+    elif request.method == 'DELETE':
+        data = request.get_json()
+        transaction_id = data.get("transaction_id")
+
+        cnx = get_db_connection()
+        success, message = setters.delete_transaction(cnx, transaction_id)
+
+        if success == True:
+            print("\n(DELETE) From route '/transactions': Transaction Successfully Deleted !\n")
+            flash(f"Transaction successfully deleted!", "success")
+            return jsonify({'success': True})
+        else:
+            print(f"\n(FAILED DELETE) From route '/transactions' - {message}\n")
+            flash("Oops! Something got wrong. Please, call suport!", "danger")
+            return jsonify({'success': False})
+    
     # If method is 'GET'
     cnx = get_db_connection()
     success, message, transactions = getters.get_transactions(cnx, user_id)
@@ -457,7 +474,6 @@ def send_mail():
 def generate_code():
     return ''.join(random.choices(string.digits, k=6))
 
-
 def send_code_to_mail(to_email, name, code):
     try:
         html_content = render_template(
@@ -494,8 +510,6 @@ def send_async_email(app, to_email, name, code):
         else:
             print(f"[EMAIL] Failed to {to_email} | {message}")
         
-
-
 # Route to verify user recovery code
 @app.route('/verify_code', methods=['POST'])
 def verify_code():

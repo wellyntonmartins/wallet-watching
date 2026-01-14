@@ -67,6 +67,26 @@ def insert_wish(cnx, user_id, wish_name):
         if cnx:
             cnx.close()
 
+def delete_transaction(cnx, transaction_id):
+    cursor = None
+
+    try:
+        cursor = cnx.cursor(dictionary=True)
+
+        query = "DELETE FROM transactions WHERE id = %s"
+        cursor.execute(query, (transaction_id,))
+        cnx.commit()
+
+        return True, "Transaction successfully deleted"
+    except Exception as e:
+        cnx.rollback()
+        return False, f"Error during transaction delete: {e}"
+    finally:
+        if cursor:
+            cursor.close()
+        if cnx:
+            cnx.close()
+
 def update_wish(cnx, wish_id, its_done):
     cursor = None
 
@@ -100,7 +120,7 @@ def delete_wish(cnx, wish_id):
         return True, "Wish successfully deleted"
     except Exception as e:
         cnx.rollback()
-        return False, f"Error during wish update: {e}"
+        return False, f"Error during wish delete: {e}"
     finally:
         if cursor:
             cursor.close()

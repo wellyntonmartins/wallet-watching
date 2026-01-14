@@ -198,6 +198,13 @@ form .modal-footer .btn-save-trans {
   font-weight: 500;
 }
 
+button.btn-outline-danger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 28px;
+}
+
 .gain {
   color: var(--fourth-strong-color-light-mode);
 }
@@ -314,6 +321,10 @@ form .modal-footer .btn-save-trans {
 
   .amount-redeemed {
     font-size: 18px;
+  }
+
+  button.btn-outline-danger {
+    height: 35px;
   }
 
   .fixed-cost {

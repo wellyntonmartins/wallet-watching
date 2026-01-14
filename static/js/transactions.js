@@ -411,3 +411,33 @@ function contentToRow(selectValue) {
     allowNegative: false,
   });
 }
+
+// Function to delete transactions
+function deleteTransaction(button) {
+  const buttonId = button.id;
+  const transactionId = buttonId.split("-")[1];
+
+  if (window.confirm("Are you sure to delete this transaction?")) {
+    fetch("/transactions", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ transaction_id: transactionId }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        window.location.href = "/transactions";
+      })
+      .catch((error) => {
+        console.error("Something got wrong:", error);
+      });
+  } else {
+    console.log("TUNE NADA!!");
+  }
+}
